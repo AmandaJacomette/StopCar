@@ -1,0 +1,35 @@
+CREATE TABLE atendente (
+ ID_Atendente integer PRIMARY KEY,
+ Nome_Atendente varchar(50) NOT NULL, 
+ Email_Atendente varchar(40) NOT NULL,
+ Senha_Atendente varchar(10) NOT NULL
+);
+
+
+CREATE TABLE cliente (
+ ID_Cliente integer PRIMARY KEY,
+ Nome_Cliente varchar(50) NOT NULL, 
+ Email_Cliente varchar(40) NOT NULL,
+ Telefone_Cliente varchar(40) NOT NULL,
+ Fidelidade integer NOT NULL
+);
+
+CREATE TABLE carro (
+ ID_Carro integer PRIMARY KEY,
+ Placa varchar(20) NOT NULL, 
+ Cor varchar(20) NOT NULL,
+ Modelo varchar(50) NOT NULL
+);
+
+CREATE TABLE vagas (
+ ID_Vaga integer PRIMARY KEY,
+ Liberada boolean DEFAULT TRUE NOT NULL
+);
+
+CREATE TABLE estacionado (
+ ID_est integer PRIMARY KEY,
+ carro integer,
+ vaga integer,
+ FOREIGN KEY (carro) REFERENCES carro (ID_carro) ON DELETE CASCADE,
+ FOREIGN KEY (vaga) REFERENCES vagas (ID_vaga) ON DELETE CASCADE
+);

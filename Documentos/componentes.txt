@@ -1,0 +1,45 @@
++---------------------------------+
+| Cliente (User Interface)        |
++---------------------------------+
+        | 
+        v
++---------------------------------+
+| Sistema de Login e Autenticação  |
+|---------------------------------|<-------+
+| Autenticação                    |        |
+| Autorização                     |        |
++---------------------------------+        |
+        |                                   |
+        v                                   |
++---------------------------------+         |
+| Cadastro de Clientes            |         |
+|---------------------------------|         |
+| Banco de Dados de Clientes      |         |
+| Serviço de Cadastro de Clientes |         |
++---------------------------------+         |
+        |                                   |
+        v                                   |
++---------------------------------+         |
+| Cadastro de Carros              |         |
+|---------------------------------|         |
+| Banco de Dados de Veículos      |         |
+| Serviço de Cadastro de Carros   |         |
++---------------------------------+         |
+        |                                   |
+        v                                   |
++------------------------------------------+ |
+| Gerenciamento de Estacionamento          | |
+|------------------------------------------| |
+| Controle de Entrada e Saída              | |
+| Monitor de Vagas                         | |
+| Banco de Dados de Movimentação           | |
++------------------------------------------+ |
+        |                                   |
+        v                                   |
++---------------------------------+         |
+| Cobrança de Pagamento           |         |
+|---------------------------------|         |
+| Serviço de Cobrança             |<--------+
+| Banco de Dados de Transações    |
+| Módulo de Pagamento             |
++---------------------------------+

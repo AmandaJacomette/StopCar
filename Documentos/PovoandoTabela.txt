@@ -1,0 +1,3 @@
+INSERT INTO atendente (nome_atendente, email_atendente, senha_atendente) VALUES ('Paulo Vitor', 'paulovitor@gmail.com', '123456')
+INSERT INTO atendente (nome_atendente, email_atendente, senha_atendente) VALUES ('Ana Luisa', 'analuisa@gmail.com', '789123')
+INSERT INTO atendente (nome_atendente, email_atendente, senha_atendente) VALUES ('Carlos André', 'carlosandre@gmail.com', '456789')

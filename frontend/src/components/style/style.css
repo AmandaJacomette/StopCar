@@ -17,28 +17,32 @@
   .vaga-livre{
     display: flex;
     justify-content: space-between; /* Espaça os divs igualmente */
-    padding: 20px;
-    margin-top: 10px;
-    background-color: #aff09f83;
+    padding: 10px;
+    margin: 10px;
+    background-color: #2fd306a9;
     border-radius: 15px;
+    width: 100%;
+    color: #EEEEEE;
   }
 
   .vaga-ocupada{
     display: flex;
     justify-content: space-between; /* Espaça os divs igualmente */
-    padding: 20px;
-    margin-top: 10px;
-    background-color: #f09f9f60;
+    padding: 10px;
+    margin: 10px;
+    background-color: #ff0000a2;
     border-radius: 15px;
+    width: 100%;
+    color: #EEEEEE;
   }
 
   .vaga{
     display: flex;
     justify-content: space-between; /* Espaça os divs igualmente */
-    padding: 20px;
-    margin-top: 10px;
-    background-color: #ececec;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    background-color: #fffefe;
     border-radius: 15px;
+    margin: 10px;
   }
 
   .vagaName{
@@ -454,32 +458,60 @@ h1 {
   background-color: #fff;
   border-radius: 10px;
   margin-left: 240px;
+  display: flex;
+  flex-direction: column;
 }
 
 .popup-inner .close-btn{
-  display: flex;
-  font-size: 12px;
-  height: 15px;
-  width: 70px;
-  margin: 10px;
-  float: right;
-  
-}
-
-.close-btn:hover {
-  background: #CF5D67;
-  color: #ffffff;
-  border: none;
-  box-shadow: 0px 4px 10px #CF5D67;
-}
-
-.modalButton{
   display: inline-block;
   font-size: 12px;
   height: 15px;
   width: 70px;
   margin: 10px;
   float: right;
+  background-color: #EEEEEE;
+  color: #cacaca;
+  background: #EEEEEE;
+  border: none;
+  
+}
+
+.close-btn:hover {
+  background: #ffffff;
+  color: #cacaca;
+  border: none;
+  box-shadow: 0px 4px 10px #CF5D67;
+}
+
+.modalButton{
+  display: inline-block;
+  font-size: 25px;
+  height: 15%;
+  width: 50%;
+  margin: 10px;
+  font: "Nunito Sans", sans-serif;
+}
+
+.buttonVagas{
+  display: inline-block;
+  font-size: 20px;
+  height: 15%;
+  width: 50%;
+  margin: 10px;
+  padding: 15px;
+  font: "Nunito Sans", sans-serif;
+}
+.buttonVagas:hover {
+  background: #CF5D67;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0px 4px 10px #CF5D67;
+}
+
+.textVagas{
+  font-size: 23px;
+  font: "Nunito Sans", sans-serif;
+  padding-left: 10px;
 }
 
 
@@ -491,7 +523,7 @@ h1 {
 }
 .input-modal input{
   display: block;
-    width: 50%;
+    width: 70%;
     height: 100%;
     border: none;
     font-size: 15px;
@@ -501,6 +533,13 @@ h1 {
     text-align: left;
 }
 
+.divButtonPopup{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
 .input-modal .modalLabel{
   color: #CF5D67;
   pointer-events: none;
@@ -508,6 +547,7 @@ h1 {
   font-size: 18px;
   transition: all 0.3s ease;
   padding: 10px;
+  
 }
 
 .container-modal{
@@ -515,6 +555,12 @@ h1 {
   position: relative;
   display: inline;
   justify-content: center;
+  
+}
+.popupVagas{
+  display: flex;
+  flex-direction: row;
+  margin: 10%;
   
 }
 

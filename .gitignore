@@ -1,5 +1,6 @@
 # dependencies
 package-lock.json
+
 yarn.lock
 /node_modules
 /frontend/node_modules

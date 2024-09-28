@@ -5,8 +5,22 @@ import requests
 import json
 import pandas as pd
 import psycopg2
- 
-datahj = datetime.datetime.now()
+from datetime import datetime
+
+def calcular_diferenca_em_horas(data_armazenada):
+    # Converter a string de data/hora armazenada no banco para um objeto datetime
+    data_armazenada_dt = datetime.strptime(data_armazenada, '%Y-%m-%d %H:%M:%S')
+    
+    # Pegar a data/hora atual
+    data_atual = datetime.now()
+    
+    # Calcular a diferença entre as duas datas
+    diferenca = data_atual - data_armazenada_dt
+    
+    # Converter a diferença para horas
+    diferenca_em_horas = diferenca.total_seconds() / 3600
+    
+    return diferenca_em_horas
  
 # Initializing flask app
 app = Flask(__name__)
@@ -69,25 +83,124 @@ def send_data():
                'mensage': 'Não foi possivel encontrar o funcionario'}
     return data
 
-@app.route('/api/criaEncomenda', methods=['POST'])
-def create_encomenda():
-    data = request.json  # Os dados do formulário serão enviados como JSON
-    print("Dados recebidos:", data)
-    solicitante = data['solicitante']
-    cdprod = data['cdprod']
-    quantidade = data['quantidade']
-    #primeiro pega produto baseado no cdprod
-    #calcula valor
-    valor = 0
-    produto = consultar_db('select valor from public.produto where codbarras= \'' + cdprod +'\'')
-    df_bd = pd.DataFrame(produto, columns=['valor'])
+@app.route('/api/getVagas', methods=['GET'])
+def get_vagas():
+    vagasBD = consultar_db('SELECT * FROM VAGAS ORDER BY id_vaga')
+    df_bd = pd.DataFrame(vagasBD, columns=['id_vaga', 'liberada'])
     df_bd.head()
     df_bd = df_bd.to_dict()
-    print("Dados banco:", df_bd['valor'][0])
-    valor = float(df_bd['valor'][0]) * float(quantidade)
-    inserir_db('INSERT INTO ENCOMENDA (cdprod, datapedido, quantidade, valor, status, solicitante) VALUES ( \''+ cdprod +'\', \'' + str(datahj) + '\', '+ quantidade + ', ' + str(round(valor, 2)) + ', \'Aguardando autorização\', \'' + solicitante + '\')')
+    vagas = []
+    for i in range(len(df_bd['id_vaga'])):
+        liberada = "Ocupada"
+        if(df_bd['liberada'][i] == True):
+            liberada = "Livre"
+        vagas.append({'id_vaga': df_bd['id_vaga'][i],
+            'liberada': liberada})
+        
     
+    print("Dados vagas:", vagas)
+    return vagas
+
+@app.route('/api/cadastraVeiculo', methods=['POST'])
+def create_veiculos():
+    data = request.json  # Os dados do formulário serão enviados como JSON
+    print("Dados recebidos:", data)
+    tipo = data['tipo']
+    placa = data['placa']
+    cor = data['cor']
+    modelo = data['modelo']
+    vaga = data['vaga']
+    
+    inserir_db('INSERT INTO veiculo (tipo, placa, cor, modelo) VALUES ( \''+ tipo +'\', \'' + placa + '\', \''+ cor + '\', \'' + modelo + '\')')
+    veiculo = busca_veiculo(placa)
+    
+    df_bd = pd.DataFrame(veiculo, columns=['id_veiculo'])
+    df_bd.head()
+    df_bd = df_bd.to_dict()
+    veiculoCadastrado = []
+    for i in range(len(df_bd['id_veiculo'])):
+        veiculoCadastrado.append({'id_veiculo': df_bd['id_veiculo'][i]})
+    veiculoEntrando = veiculoCadastrado[0]['id_veiculo']
+    print("carro ", veiculoCadastrado)
+    preenche_vaga(veiculoEntrando, vaga)
+
     return data
+
+@app.route('/api/veiculoCadastrado', methods=['POST'])
+def veiculo_cadastrado():
+    data = request.json  # Os dados do formulário serão enviados como JSON
+    print("Dados recebidos:", data)
+    placa = data['placa']
+    vaga = data['vaga']
+    
+    veiculo = busca_veiculo(placa)
+    
+    df_bd = pd.DataFrame(veiculo, columns=['id_veiculo'])
+    df_bd.head()
+    df_bd = df_bd.to_dict()
+    veiculoCadastrado = []
+    for i in range(len(df_bd['id_veiculo'])):
+        veiculoCadastrado.append({'id_veiculo': df_bd['id_veiculo'][i]})
+
+    veiculoEntrando = veiculoCadastrado[0]['id_veiculo']
+    print("carro ", veiculoCadastrado)
+    preenche_vaga(veiculoEntrando, vaga)
+
+    return data
+
+def busca_veiculo(placa):
+    veiculo = consultar_db('SELECT id_veiculo ' +
+                             'FROM veiculo '+
+                             'WHERE placa = \'' + str(placa)+ '\'')
+    
+    return veiculo
+
+
+def preenche_vaga(veiculo, vaga):
+    data_e_hora_atuais = datetime.now()
+    data_e_hora_em_texto = data_e_hora_atuais.strftime('%Y-%m-%d %H:%M:%S')
+    inserir_db('INSERT INTO estacionado (veiculo, vaga, horaentrada) VALUES ( \''+ str(veiculo) +'\', \'' + str(vaga) + '\', \'' + str(data_e_hora_em_texto) + '\')')
+    inserir_db('UPDATE vagas SET liberada = false WHERE id_vaga = \'' + str(vaga) + '\'')
+
+@app.route('/api/getFinalizacao', methods=['POST'])
+def get_finalizacao():
+    data = request.json  # Os dados do formulário serão enviados como JSON
+    print("Dados recebidos:", data)
+    vaga = data['vaga']
+    vagasBD = consultar_db('SELECT E.*, V.* FROM estacionado E, veiculo V WHERE V.id_veiculo = E.veiculo AND E.vaga = \'' +str(vaga)+ '\'')
+    df_bd = pd.DataFrame(vagasBD, columns=['id_est', 'veiculo', 'vaga', 'horaentrada', 'id_veiculo', 'tipo', 'placa', 'cor', 'modelo'])
+    df_bd.head()
+    df_bd = df_bd.to_dict()
+    preenchida = []
+    for i in range(len(df_bd['id_est'])):
+
+        diferenca = calcular_diferenca_em_horas(df_bd['horaentrada'][i])
+        valor = round(diferenca, 2) * 10
+        
+        preenchida.append({'id_est': df_bd['id_est'][i],
+            'placa': (df_bd['placa'][i]).upper(),
+            'id_veiculo': df_bd['id_veiculo'][i],
+            'vaga': df_bd['vaga'][i],
+            'horaentrada': df_bd['horaentrada'][i],
+            'horas': round(diferenca, 2),
+            'valor': round(valor, 2)})
+        
+    
+    print("Dados vagas:", preenchida)
+    return preenchida
+
+@app.route('/api/encerraVaga', methods=['POST'])
+def encerrar_vaga():
+    data = request.json  # Os dados do formulário serão enviados como JSON
+    print("Dados recebidos:", data)
+    vaga = data['vaga']
+    id_veiculo = data['id_veiculo']
+    inserir_db('DELETE FROM estacionado WHERE veiculo = \'' +str(id_veiculo)+ '\' AND vaga = \'' +str(vaga)+ '\'')
+    inserir_db('UPDATE vagas SET liberada = TRUE WHERE id_vaga = \'' +str(vaga)+ '\'')
+
+    return data
+    
+
 
 @app.route('/api/atualizaEncomenda', methods=['POST'])
 def update_encomenda():
@@ -128,17 +241,7 @@ def delete_encomenda():
     data = {'error': False}
     return data
 
-@app.route('/api/getEncomendas', methods=['GET'])
-def get_encomenda():
-    encomenda = consultar_db('SELECT E.IDENCOMENDA, R.REPNOME, P.PRODNOME, E.DATAPEDIDO,'+
-                             ' E.QUANTIDADE, E.VALOR, E.STATUS'+
-                             ' FROM ENCOMENDA E, PRODUTO P, REPOSITOR R '+
-                             'WHERE E.SOLICITANTE = R.CPFREP AND E.CDPROD = P.CODBARRAS')
-    df_bd = pd.DataFrame(encomenda, columns=['idencomenda', 'repnome', 'prodnome', 'datapedido', 'quantidade', 'valor', 'status'])
-    df_bd.head()
-    df_bd = df_bd.to_dict()
-    print("Dados banco:", df_bd)
-    return df_bd
+
 
 @app.route('/api/getEstoque', methods=['GET'])
 def get_estoque():

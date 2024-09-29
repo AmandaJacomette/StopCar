@@ -3,22 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import StoreContext from '../components/Store/Context';
 import logo from "../img/logo.png";
 import './sidebar.css'
-/*
-import logo from "../img/logo.png";
-
-import Encomendas from '../pages/Encomendas';
-import RecursosHumanos from '../pages/RecursosHumanos';
-import VendasRealizadas from '../pages/VendasRealizadas';
-import PrateleiraseEstoque from '../pages/EstoqueePrateleiras'
-import Relatorios from '../pages/Relatorios'
-import Departamento from '../pages/Departamento'
-import JornadadeTrabalho from '../pages/JornadadeTrabalho'
-*/
 
 function Sidebar ({userData, newMessage}) {
     const navigate = useNavigate();
 	const {token, setToken } = useContext(StoreContext);
-	const [pratEstoque, setpratEstoque] = useState(false);
 
 	useEffect(() => {
 		console.log(userData);
@@ -63,8 +51,6 @@ function Sidebar ({userData, newMessage}) {
 					<div className="text-span"> Programa Fidelidade </div>
 					</span>
 				</a>
-				
-				
 				
 				<a class="item-a">
 					<span className="item" onClick={() => setToken(null)}>

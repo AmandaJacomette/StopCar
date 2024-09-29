@@ -283,10 +283,10 @@ h1 {
 }
 .update-btn {
   display: inline-block;
-  font-size: 15px;
-  height: 15px;
-  width: 120px;
-  margin: 10px;
+  font-size: 20px;
+  height: 15%;
+  width: 50%;
+  margin: 15px;
 }
 
 .update-btn:hover {
@@ -538,6 +538,14 @@ h1 {
   display: flex;
   align-items: center;
   flex-direction: column;
+}
+
+.fidelidadeButtons{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 20%;
 }
 
 .input-modal .modalLabel{

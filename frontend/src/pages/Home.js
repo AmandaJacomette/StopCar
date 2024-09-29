@@ -8,7 +8,7 @@ import VagasEstacionamento from './VagasEstacionamento';
 import VendasRealizadas from './VendasRealizadas';
 import Encomendas from './Encomendas';
 import Relatorios from './Relatorios';
-import Departamento from './Departamento';
+import Fidelidade from './Fidelidade';
 import Usuario from './Usuario';
 import EstoqueePrateleiras from './EstoqueePrateleiras';
 
@@ -43,7 +43,7 @@ const Home = ({userData}) => {
         : ''}
 
         {state.message === 1 ?
-          <JornadadeTrabalho userData={userData}></JornadadeTrabalho>
+          <Fidelidade userData={userData}></Fidelidade>
           
         : ''}
         
@@ -51,30 +51,6 @@ const Home = ({userData}) => {
           <VagasEstacionamento userData={userData}></VagasEstacionamento>
           
         : ''}
-         {state.message === 3 ?
-          <VendasRealizadas userData={userData}></VendasRealizadas>
-          
-        : ''}
-         {state.message === 4 ?
-          <Encomendas userData={userData}></Encomendas>
-          
-        : ''}
-         {state.message === 5 ?
-          <EstoqueePrateleiras userData={userData}></EstoqueePrateleiras>
-          
-        : ''}
-         {state.message === 6 ?
-          <Relatorios userData={userData}></Relatorios>
-          
-        : ''}
-
-        {state.message === 7 ?
-          <Departamento userData={userData}></Departamento>
-          
-        : ''}
-      
-          
-        
         <br/>
       </div>
       

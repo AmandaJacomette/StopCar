@@ -252,6 +252,24 @@ def encerrar_vaga():
     
     return jsonify(data)
 
+@app.route('/api/criaCliente', methods=['POST'])
+def create_clientes():
+    data = request.json
+    nome = data['nome']
+    cpf = data['cpf']
+    email = data['email']
+    telefone = data['telefone']
+    
+    query = QueryFactory.insert_query(
+        table='cliente',
+        columns=['cpf', 'nome_cliente', 'email_cliente', 'telefone_cliente'],
+        values=[cpf, nome, email, telefone]
+    )
+    
+    inserir_db(query)
+    
+    return jsonify(data)
+
 # Rodando a aplicação
 if __name__ == '__main__':
     app.run(debug=True)

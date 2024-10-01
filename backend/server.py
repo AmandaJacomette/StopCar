@@ -259,6 +259,24 @@ def create_clientes():
     cpf = data['cpf']
     email = data['email']
     telefone = data['telefone']
+
+    tipo = data['tipo']
+    placa = data['placa']
+    cor = data['cor']
+    modelo = data['modelo']
+    
+    query = QueryFactory.insert_query(
+        table='veiculo',
+        columns=['tipo', 'placa', 'cor', 'modelo'],
+        values=[tipo, placa, cor, modelo]
+    )
+    
+    inserir_db(query)
+
+    veiculo = busca_veiculo(placa)
+    df_bd = pd.DataFrame(veiculo, columns=['id_veiculo']).to_dict()
+    veiculoEntrando = df_bd['id_veiculo'][0]
+    
     
     query = QueryFactory.insert_query(
         table='cliente',
@@ -267,8 +285,85 @@ def create_clientes():
     )
     
     inserir_db(query)
+
+    query = QueryFactory.insert_query(
+        table='carro_cliente',
+        columns=['cliente', 'veiculo'],
+        values=[cpf, veiculoEntrando]
+    )
+    
+    inserir_db(query)
     
     return jsonify(data)
+
+@app.route('/api/editarCliente', methods=['POST'])
+def edit_clientes():
+    data = request.json
+    nome = data['nome']
+    cpf = data['cpf']
+    email = data['email']
+    telefone = data['telefone']
+    
+    updates = {}
+
+    if(nome):
+        updates['nome_cliente'] = nome
+    if(email):
+        updates['email_cliente'] = email
+    if(telefone):
+        updates['telefone_cliente'] = telefone
+
+    update_query = QueryFactory.update_query(
+        table='cliente',
+        updates=updates,
+        where_clause=f"cpf = '{cpf}'"
+    )
+    
+    inserir_db(update_query)
+    
+    return jsonify(data)
+
+@app.route('/api/clienteCadastrado', methods=['POST'])
+def cliente_cadastrado():
+    data = request.json
+    cpf = data['cpf']
+    vaga = data['vaga']
+    
+    veiculo = busca_cliente_carro(cpf)
+    df_bd = pd.DataFrame(veiculo, columns=['veiculo']).to_dict()
+    veiculoEntrando = df_bd['veiculo'][0]
+    
+    preenche_vaga(veiculoEntrando, vaga)
+    updade_fidelidade(cpf)
+    return jsonify(data)
+
+def busca_cliente_carro(cpf):
+    query = QueryFactory.select_query(
+        table='carro_cliente',
+        columns='veiculo',
+        where_clause=f"cliente = '{cpf}'"
+    )
+    return consultar_db(query)
+
+def updade_fidelidade(cpf):
+
+    query = QueryFactory.select_query(
+        table='cliente',
+        columns='fidelidade',
+        where_clause=f"cpf = '{cpf}'"
+    )
+    result = consultar_db(query)
+
+    df_bd = pd.DataFrame(result, columns=['fidelidade']).to_dict()
+    fidelidade = df_bd['fidelidade'][0]
+    fidelidade += 1
+
+    query = QueryFactory.update_query(
+        table='cliente',
+        updates={'fidelidade': fidelidade},
+        where_clause=f"cpf = '{cpf}'"
+    )
+    return inserir_db(query)
 
 # Rodando a aplicação
 if __name__ == '__main__':

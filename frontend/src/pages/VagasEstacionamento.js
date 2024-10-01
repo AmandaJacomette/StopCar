@@ -22,7 +22,7 @@ function VagasEstacionamento({userData}){
   const [buttonPopupOcupado, setButtonPopupOcupado] = useState(false);
   const [buttonPopupCadastrar, setCadastrarVeiculo] = useState(false);
   const [buttonPopupBusca, setBuscaVeiculo] = useState(false);
-  const [buttonDeletePopup, setDeletePopup] = useState(false);
+  const [buttonClientePopup, setClientePopup] = useState(false);
 
   const[formData, setFunc] = useState({
     tipo: '',
@@ -40,6 +40,10 @@ function VagasEstacionamento({userData}){
   const[formDataBusca, setBusca] = useState({
     placa: ''
   });
+
+  const[formDataCliente, setCliente] = useState({
+    cpf: ''
+  });
   
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -52,6 +56,14 @@ function VagasEstacionamento({userData}){
   const handleInputChangeBusca = (event) => {
   const { name, value } = event.target;
   setBusca((prevData) => ({
+    ...prevData,
+    [name]: value,
+  }));
+};
+
+const handleInputChangeCliente = (event) => {
+  const { name, value } = event.target;
+  setCliente((prevData) => ({
     ...prevData,
     [name]: value,
   }));
@@ -74,11 +86,18 @@ const clearBuscar = () => {
   });
   
 };
+
+const clearCliente = () => {
+  setCliente({
+  cpf: ''
+  });
+  
+};
   
 useEffect(() => {
   const interval = setInterval(() => {
   getVagas();
-  }, 5000); 
+  }, 2000); 
   return () => clearInterval(interval);
   
 }, [tableDataVagas]);
@@ -165,6 +184,12 @@ const buscaVeiculo = (vaga) => {
   setBuscaVeiculo(true);
 }
 
+const buscaCliente = (vaga) => {
+  clearCliente()
+  setButtonPopup(false);
+  setClientePopup(true);
+}
+
 const handleSubmitModalBusca = (event) => {
   event.preventDefault();
 
@@ -197,9 +222,28 @@ const handleSubmitModalEncerrar = (event) => {
   });
 }
 
+const handleSubmitModalCliente = (event) => {
+  event.preventDefault();
+
+  const dataToSend = {
+  ...formDataCliente,
+  vaga: vagaEscolhida // Adiciona a vaga selecionada ao objeto formData
+  };
+  
+  axios.post('http://127.0.0.1:5000/api/clienteCadastrado', dataToSend)
+  .then(response => {
+    console.log('Resposta do servidor:', response.data);
+    setBuscaVeiculo(false);
+    clearBuscar()
+  })
+  .catch(error => {
+    console.error('Erro ao enviar dados:', error);
+  });
+}
+
 
   return (
-    <div className="mform">
+    <div className="mform" onLoad={getVagas}>
     <div class = "text">Vagas</div>
     {
         tableDataVagas.map((vaga) => {
@@ -220,7 +264,7 @@ const handleSubmitModalEncerrar = (event) => {
       <div className='popupVagas'>
         <button className= "buttonVagas" onClick={cadastrarVeiculo} >Cadastrar Veiculo</button>
         <button className= "buttonVagas" onClick={buscaVeiculo} >Buscar Veiculo</button>
-         
+        <button className= "buttonVagas" onClick={buscaCliente} >Selecionar Cliente</button>
       </div>
     </Popup>
 
@@ -230,10 +274,10 @@ const handleSubmitModalEncerrar = (event) => {
       <form onSubmit={handleSubmitModal}>
       <div class="form-row">
         <div class="input-modal">
-        <label className='modalLabel' for="cdprod">
-          Tipo
-        </label>
-        <input 
+          <label className='modalLabel' for="cdprod">
+            Tipo
+          </label>
+          <input 
             name="tipo" 
             className='dadosUsers' 
             value={formData.tipo}
@@ -241,16 +285,16 @@ const handleSubmitModalEncerrar = (event) => {
         </div>
 
         <div class = "input-modal">
-        <label className='modalLabel' for="quantidade">
-          Placa
-        </label>
-        <input 
+          <label className='modalLabel' for="quantidade">
+            Placa
+          </label>
+          <input 
             name="placa" 
             className='dadosUsers' 
             value={formData.placa}
             onChange={handleInputChange} required />
         </div>
-        </div>
+      </div>
         <div class="form-row">
         <div class = "input-modal">
         <label className='modalLabel' for="quantidade">
@@ -299,10 +343,32 @@ const handleSubmitModalEncerrar = (event) => {
             onChange={handleInputChangeBusca} required/>
         </div>
       </div>
-        
-
         <div className='divButtonPopup'>
         <button className= "modalButton" type = "submit" >Buscar</button>
+        </div>
+        
+        </form> 
+      </div>
+    </Popup>
+
+    <Popup trigger={buttonClientePopup} setTrigger={setClientePopup}>
+      <div className='container-modal'>
+      <div className="text-modal">Selecionar Cliente</div>
+      <form onSubmit={handleSubmitModalCliente}>
+      <div class="form-row">
+        <div class="input-modal">
+        <label className='modalLabel' for="cdprod">
+          CPF
+        </label>
+        <input 
+            name="cpf" 
+            className='dadosUsers' 
+            value={formDataBusca.cpf}
+            onChange={handleInputChangeCliente} required/>
+        </div>
+      </div>
+        <div className='divButtonPopup'>
+        <button className= "modalButton" type = "submit" >Selecionar</button>
         </div>
         
         </form> 

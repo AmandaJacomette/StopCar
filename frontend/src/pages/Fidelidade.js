@@ -21,6 +21,13 @@ function Fidelidade({userData}){
     telefone: ''
   });
 
+  const[formDataEdit, setEdit] = useState({
+    cpf: '',
+    nome: '',
+    email: '',
+    telefone: ''
+  });
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFunc((prevData) => ({
@@ -39,17 +46,33 @@ function Fidelidade({userData}){
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  };*/
 
   const handleClearUsers = () => {
-    setTableData([]);
-  }*/
+    setFunc({
+      cpf: '',
+      nome: '',
+      email: '',
+      telefone: ''
+    });
+  }
+
+  const handleClearEdit = () => {
+    setEdit({
+      cpf: '',
+      nome: '',
+      email: '',
+      telefone: ''
+    });
+  }
 
   const handleCreateUsers = () => {
+    handleClearUsers()
     setButtonPopup(true);
   }
 
   const handleEdit = () => {
+    handleClearEdit()
     setEditPopup(true);
   }
 
@@ -67,11 +90,11 @@ function Fidelidade({userData}){
       });
   }
 
-  const handleSubmitDelete = (event) => {
+  const handleSubmitEdit = (event) => {
     event.preventDefault();
     console.log(formData.cpf);
 
-    axios.post('http://127.0.0.1:5000/api/deletaFuncionario', formData)
+    axios.post('http://127.0.0.1:5000/api/editarCliente', formData)
       .then(response => {
         console.log('Resposta do servidor:', response.data);
         setEditPopup(false);
@@ -132,6 +155,58 @@ function Fidelidade({userData}){
                       className='dadosUsers' 
                       value={formData.telefone}
                       onChange={handleInputChange} required />
+
+                  
+                </div>
+              </div>
+                <label className='modalLabel' for="quantidade">
+                  Carro: 
+                </label>
+              <div class="form-row">
+                
+                <div class="input-modal">
+                
+                  <label className='modalLabel' for="cdprod">
+                    Tipo
+                  </label>
+                  <input 
+                    name="tipo" 
+                    className='dadosUsers' 
+                    value={formData.tipo}
+                    onChange={handleInputChange} required/>
+                </div>
+
+                <div class = "input-modal">
+                  <label className='modalLabel' for="quantidade">
+                    Placa
+                  </label>
+                  <input 
+                    name="placa" 
+                    className='dadosUsers' 
+                    value={formData.placa}
+                    onChange={handleInputChange} required />
+                </div>
+
+                <div class = "input-modal">
+                  <label className='modalLabel' for="quantidade">
+                    Cor
+                  </label>
+                  <input 
+                      name="cor" 
+                      className='dadosUsers' 
+                      value={formData.cor}
+                      onChange={handleInputChange} required />
+                </div>
+
+                <div class = "input-modal">
+                <label className='modalLabel' for="quantidade">
+                  Modelo
+                </label>
+                <input 
+                    name="modelo" 
+                    className='dadosUsers' 
+                    value={formData.modelo}
+                    onChange={handleInputChange} required />
                 </div>
               </div>
 
@@ -146,7 +221,7 @@ function Fidelidade({userData}){
         <Popup trigger={buttonEditPopup} setTrigger={setEditPopup}>
           <div className='container-modal'>
             <div className="text-modal">Editar Cliente</div>
-            <form onSubmit={handleSubmitDelete}>
+            <form onSubmit={handleSubmitEdit}>
             <div class="form-row">
                 <div class="input-modal">
                   

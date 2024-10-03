@@ -17,7 +17,7 @@ class DatabaseConnection:
                 cls._instance = super(DatabaseConnection, cls).__new__(cls)
                 cls._instance.connection = psycopg2.connect(
                     host='localhost',
-                    database='stopCar',
+                    database='StopCar',
                     user='postgres',
                     password='147258'
                 )
@@ -129,9 +129,9 @@ def preenche_vaga(veiculo, vaga):
     inserir_db(insert_query)
     inserir_db(update_query)
 
-def busca_cliente_carro(cpf):
+def busca_cliente_veiculo(cpf):
     query = QueryFactory.select_query(
-        table='carro_cliente',
+        table='veiculo_cliente',
         columns='veiculo',
         where_clause=f"cliente = '{cpf}'"
     )
@@ -357,7 +357,7 @@ def cliente_cadastrado():
     cpf = data['cpf']
     vaga = data['vaga']
     
-    veiculo = busca_cliente_carro(cpf)
+    veiculo = busca_cliente_veiculo(cpf)
     df_bd = pd.DataFrame(veiculo, columns=['veiculo']).to_dict()
     veiculoEntrando = df_bd['veiculo'][0]
     

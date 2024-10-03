@@ -215,6 +215,7 @@ const handleSubmitModalBusca = (event) => {
     if (response.data.error === false) {
       setBuscaVeiculo(false);
       clearBuscar()
+      showSuccess('Vaga preenchida com sucesso!');
     } else {
       window.alert(response.data.message);
     }
@@ -232,6 +233,7 @@ const handleSubmitModalEncerrar = (event) => {
     console.log('Resposta do servidor:', response.data);
     if (response.data.error === false) {
       setButtonPopupOcupado(false);
+      showSuccess('Vaga encerrada com sucesso!');
     } else {
       window.alert(response.data.message);
     }
@@ -256,6 +258,7 @@ const handleSubmitModalCliente = (event) => {
     if (response.data.error === false) {
       setClientePopup(false);
       clearBuscar();
+      showSuccess('Vaga preenchida com sucesso!');
     } else {
       window.alert(response.data.message);
     }

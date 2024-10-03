@@ -1,18 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
 import '../components/style/style.css'
-
-import logo from "../img/logo.png"
-//import logoSimples from "../img/logoSimples.png"
-import StoreContext from '../components/Store/Context';
 import Popup from '../components/Popup';
 import axios from 'axios';
 
 function Fidelidade({userData}){
-  const [tableData, setTableData] = useState([]);
   const [buttonPopup, setButtonPopup] = useState(false);
   const [buttonEditPopup, setEditPopup] = useState(false);
-
-  const { setToken, token } = useContext(StoreContext);
 
   const[formData, setFunc] = useState({
     cpf: '',
@@ -28,6 +21,17 @@ function Fidelidade({userData}){
     telefone: ''
   });
 
+  const [successMessage, setSuccessMessage] = useState(''); // Estado para mensagem de sucesso
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false); // Estado para controle do pop-up
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setShowSuccessPopup(true);
+    setTimeout(() => {
+      setShowSuccessPopup(false);
+    }, 3000); // Pop-up some após 3 segundos
+  };
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFunc((prevData) => ({
@@ -36,18 +40,13 @@ function Fidelidade({userData}){
     }));
 };
 
-  useEffect(() => {
-    //fetchData();
-  }, []);
-
-  /*const fetchData = async () => {
-    try {
-     console.log(tableData);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };*/
-
+const handleInputChangeEdit = (event) => {
+  const { name, value } = event.target;
+  setEdit((prevData) => ({
+    ...prevData,
+    [name]: value,
+  }));
+};
   const handleClearUsers = () => {
     setFunc({
       cpf: '',
@@ -82,8 +81,12 @@ function Fidelidade({userData}){
     axios.post('http://127.0.0.1:5000/api/criaCliente', formData)
       .then(response => {
         console.log('Resposta do servidor:', response.data);
-        setButtonPopup(false);
-
+        if (response.data.error === false) {
+          setButtonPopup(false);
+          showSuccess('Cliente criado com sucesso!');
+        } else {
+          window.alert(response.data.message);
+        }
       })
       .catch(error => {
         console.error('Erro ao enviar dados:', error);
@@ -92,12 +95,18 @@ function Fidelidade({userData}){
 
   const handleSubmitEdit = (event) => {
     event.preventDefault();
-    console.log(formData.cpf);
+    console.log(formDataEdit.cpf);
 
-    axios.post('http://127.0.0.1:5000/api/editarCliente', formData)
+    axios.post('http://127.0.0.1:5000/api/editarCliente', formDataEdit)
       .then(response => {
         console.log('Resposta do servidor:', response.data);
-        setEditPopup(false);
+        if (response.data.error === false) {
+          setEditPopup(false);
+          showSuccess('Cliente alterado com sucesso!');
+        } else {
+          window.alert(response.data.message);
+        }
+        
       })
       .catch(error => {
         console.error('Erro ao enviar dados:', error);
@@ -232,8 +241,8 @@ function Fidelidade({userData}){
                   <input 
                       name="cpf" 
                       className='dadosUsers' 
-                      value={formData.cpf}
-                      onChange={handleInputChange} required/>
+                      value={formDataEdit.cpf}
+                      onChange={handleInputChangeEdit} required/>
 
                   <label className='modalLabel' for="cdprod">
                     Digite os dados a serem editados: 
@@ -245,8 +254,8 @@ function Fidelidade({userData}){
                   <input 
                       name="nome" 
                       className='dadosUsers' 
-                      value={formData.nome}
-                      onChange={handleInputChange} />
+                      value={formDataEdit.nome}
+                      onChange={handleInputChangeEdit} />
 
                   <label className='modalLabel' for="quantidade">
                     Email
@@ -254,8 +263,8 @@ function Fidelidade({userData}){
                   <input 
                       name="email" 
                       className='dadosUsers' 
-                      value={formData.email}
-                      onChange={handleInputChange}  />
+                      value={formDataEdit.email}
+                      onChange={handleInputChangeEdit}  />
                 
                   <label className='modalLabel' for="quantidade">
                     Telefone
@@ -263,8 +272,8 @@ function Fidelidade({userData}){
                   <input 
                       name="telefone" 
                       className='dadosUsers' 
-                      value={formData.telefone}
-                      onChange={handleInputChange}  />
+                      value={formDataEdit.telefone}
+                      onChange={handleInputChangeEdit}  />
                 </div>
               </div>
               <div className='divButtonPopup'>
@@ -273,6 +282,12 @@ function Fidelidade({userData}){
               </form> 
           </div>
         </Popup>
+
+        {showSuccessPopup && (
+          <div className="success-popup">
+            {successMessage}
+          </div>
+        )}
       
         </div>
   );

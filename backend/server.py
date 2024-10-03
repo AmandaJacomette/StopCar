@@ -1,8 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import datetime
-import requests
-import json
 import pandas as pd
 import psycopg2
 from datetime import datetime
@@ -263,10 +261,26 @@ def get_finalizacao():
         vagasBD = consultar_db(query)
         df_bd = pd.DataFrame(vagasBD, columns=['id_est', 'veiculo', 'vaga', 'horaentrada', 'id_veiculo', 'tipo', 'placa', 'cor', 'modelo']).to_dict()
         
+        query_fidelidade = QueryFactory.select_query(
+            table='veiculo_cliente VC, cliente C',
+            columns='C.fidelidade',
+            where_clause=f"VC.veiculo = '{df_bd['id_veiculo'][0]}' AND VC.cliente = C.cpf"
+        )
+
+        fidelidade = 0
+
+        if len(consultar_db(query_fidelidade)) > 0:
+            df_bd_fidelidade = pd.DataFrame(consultar_db(query_fidelidade), columns=['fidelidade']).to_dict()
+            fidelidade = df_bd_fidelidade['fidelidade'][0]
+
         preenchida = []
         for i in range(len(df_bd['id_est'])):
             diferenca = calcular_diferenca_em_horas(df_bd['horaentrada'][i])
             valor = round(diferenca, 2) * 10
+
+            if fidelidade > 5:
+                valor = valor - (valor * 0.1)
+
             preenchida.append({
                 'id_est': df_bd['id_est'][i],
                 'placa': df_bd['placa'][i].upper(),

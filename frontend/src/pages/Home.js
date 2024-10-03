@@ -1,16 +1,11 @@
-import React, { useContext, useState, Component, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import StoreContext from '../components/Store/Context';
 import Sidebar from '../components/Sidebar'
 import '../components/sidebar.css'
-import { Link, useNavigate } from 'react-router-dom';
-import JornadadeTrabalho from './JornadadeTrabalho';
+import { useNavigate } from 'react-router-dom';
 import VagasEstacionamento from './VagasEstacionamento';
-import VendasRealizadas from './VendasRealizadas';
-import Encomendas from './Encomendas';
-import Relatorios from './Relatorios';
 import Fidelidade from './Fidelidade';
 import Usuario from './Usuario';
-import EstoqueePrateleiras from './EstoqueePrateleiras';
 
 const Home = ({userData}) => {
   const { setToken, token } = useContext(StoreContext);

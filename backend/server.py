@@ -358,8 +358,14 @@ def cliente_cadastrado():
     vaga = data['vaga']
     
     veiculo = busca_cliente_veiculo(cpf)
+    print("veiculo retornado:", veiculo)
     df_bd = pd.DataFrame(veiculo, columns=['veiculo']).to_dict()
     veiculoEntrando = df_bd['veiculo'][0]
+    
+    #if len(df_bd['veiculo']) > 0:
+    #    veiculoEntrando = df_bd['veiculo'][0]
+    #else:
+    #    return jsonify({"error": "Cliente não encontrado ou veículo não cadastrado"}), 404
     
     preenche_vaga(veiculoEntrando, vaga)
     updade_fidelidade(cpf)

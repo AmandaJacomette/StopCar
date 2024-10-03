@@ -8,7 +8,6 @@ from server import updade_fidelidade
 
 def test_calcular_diferenca_em_horas(mocker):
     #Mocker da data e hora atual:
-    #mocker.patch.object(datetime, 'now', return_value = datetime(2024, 10, 3, 9, 30, 0))
     mocker.patch('server.datetime', wraps=datetime)
     mocker.patch('server.datetime.now', return_value = datetime(2024, 10, 3, 9, 30, 0))
 
@@ -18,6 +17,18 @@ def test_calcular_diferenca_em_horas(mocker):
 
     #Verifica se a diferença em horas esta correta
     assert resultado == -2.5
+
+def test_calcular_diferenca_em_horas_falha(mocker):
+     #Mocker da data e hora atual:
+    mocker.patch('server.datetime', wraps=datetime)
+    mocker.patch('server.datetime.now', return_value = datetime(2024, 10, 3, 9, 30, 0))
+
+    #Data que foi armazenada para teste:
+    data_armazenada = '2024-10-03 12:00:00'
+    resultado = calcular_diferenca_em_horas(data_armazenada)
+
+    #Verifica se a diferença em horas esta correta
+    assert resultado != 2.30
 
 def test_busca_veiculo(mocker):
     #Mock da função consultar_db:
@@ -30,9 +41,18 @@ def test_busca_veiculo(mocker):
     assert resultado == [{'id_veiculo': 1}]
     mock_consultar_db.assert_called_once()
 
+def test_busca_veiculo_falha(mocker):
+    #Mock da função consultar_db:
+    mock_consultar_db = mocker.patch('server.consultar_db')
+    mock_consultar_db.return_value = []
+
+    resultado = busca_veiculo('DEF5678')
+
+    #Verifica se o resultado e a consulta estão corretos:
+    assert resultado == []
+
 def test_preenche_vaga(mocker):
     #Mocker da data e hora atual:
-    #mocker.patch.object(datetime, 'now', return_value = datetime(2024, 10, 3, 9, 30, 0))
     mocker.patch('server.datetime', wraps=datetime)
     mocker.patch('server.datetime.now', return_value = datetime(2024, 10, 3, 9, 30, 0))
 
@@ -45,6 +65,20 @@ def test_preenche_vaga(mocker):
     #Verifica se a função foi chamada corretamente:
     assert mock_inserir_db.call_count == 2
 
+def test_preenche_vaga_falha(mocker):
+    #Mocker da data e hora atual:
+    mocker.patch('server.datetime', wraps=datetime)
+    mocker.patch('server.datetime.now', return_value = datetime(2024, 10, 3, 9, 30, 0))
+
+    #Mocker da função inserir_db
+    mock_inserir_db = mocker.patch('server.inserir_db')
+
+    #Chama a função com dados para teste:
+    preenche_vaga('1', '4')
+
+    #Verifica se a função foi chamada corretamente:
+    assert mock_inserir_db.call_count != 3
+
 
 def test_busca_cliente_veiculo(mocker):
     #Mocker da função consultar_db:
@@ -56,6 +90,16 @@ def test_busca_cliente_veiculo(mocker):
     #Verifica se o resultado está certo:
     assert resultado == [{'veiculo': '1'}]
     mock_consultar_db.assert_called_once()
+
+def test_busca_cliente_veiculo_falha(mocker):
+    #Mocker da função consultar_db:
+    mock_consultar_db = mocker.patch('server.consultar_db')
+    mock_consultar_db.return_value = []
+
+    resultado = busca_cliente_veiculo('00000000000')
+
+    #Verifica se o resultado está certo:
+    assert resultado == []
 
 def test_update_fidelidade(mocker):
     #Mock da função consultar_db:
@@ -71,4 +115,17 @@ def test_update_fidelidade(mocker):
     #Verifica se a função foi chamada certo:
     mock_inserir_db.assert_called_once()
 
+def test_update_fidelidade_falha(mocker):
+    #Mock da função consultar_db:
+    mock_consultar_db = mocker.patch('server.consultar_db')
+    mock_consultar_db.return_value = [{'fidelidade': 1}]
+
+    #Mock da função inserir_db:
+    mock_inserir_db = mocker.patch('server.inserir_db')
+
+    #Chama a função:
+    updade_fidelidade('12345678900')
+
+    #Verifica se a função foi chamada certo:
+    assert mock_inserir_db.call_count != 2
 

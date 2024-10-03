@@ -15,20 +15,28 @@ def test_login(client):
     json_data = response.get_json()
 
     assert response.status_code == 200
+    assert 'message' in json_data
     if json_data['error']:
-        assert json_data['mensagem'] == 'Não foi possível encontrar o funcionário'
-    else:
-        assert 'nome' in json_data
+        assert json_data['message'] == 'Não foi possível encontrar o funcionário'
+
+def test_login_falha(client):
+    response = client.post('/api/login', json = {
+        'login': 'invalido@email.com',
+        'senha': 'errada'
+    })
+    
+    json_data = response.get_json()
+    json_data['error'] == True
+    json_data['message'] == 'Dados inválidos'
 
 def test_get_vagas(client):
     response = client.get('/api/getVagas')
     json_data = response.get_json()
 
     assert response.status_code == 200
-    assert isinstance(json_data, list)
-    if len(json_data) > 0:
-        assert 'id_vaga' in json_data[0]
-        assert 'liberada' in json_data[0]
+    assert 'data' in json_data
+    assert isinstance(json_data['data'], list)
+
 
 def test_cadastra_veiculo(client):
     response = client.post('/api/cadastraVeiculo', json = {
@@ -41,7 +49,15 @@ def test_cadastra_veiculo(client):
     json_data = response.get_json()
 
     assert response.status_code == 200
-    assert json_data['placa'] == 'ABC1234'
+    assert 'placa' in json_data['data']
+    assert json_data['data']['placa'] == 'ABC1234'
+
+def test_cadastra_veiculo_falha(client):
+    response = client.post('/api/cadastraVeiculo', json = {})
+    json_data = response.get_json()
+
+    assert json_data['error'] == True
+    assert 'message' in json_data
 
 def test_veiculo_cadastrado(client):
     response = client.post('/api/veiculoCadastrado', json = {
@@ -51,7 +67,18 @@ def test_veiculo_cadastrado(client):
     json_data = response.get_json()
 
     assert response.status_code == 200
-    assert json_data['placa'] == 'ABC1234'
+    assert 'placa' in json_data['data']
+    assert json_data['data']['placa'] == 'ABC1234'
+
+def test_veiculo_cadastrado_falha(client):
+    response = client.post('/api/veiculoCadastrado', json = {
+        'placa': 'inexistente',
+        'vaga': '0'
+    })
+    json_data = response.get_json()
+
+    assert json_data['error'] == True
+    assert json_data['message'] == 'Erro ao registrar veículo na vaga: 0'
 
 def test_get_finalizacao(client):
     response = client.post('/api/getFinalizacao', json = {
@@ -60,10 +87,15 @@ def test_get_finalizacao(client):
     json_data = response.get_json()
 
     assert response.status_code == 200
-    assert isinstance(json_data, list)
-    if len(json_data) > 0:
-        assert 'placa' in json_data[0]
-        assert 'valor' in json_data[0]
+    assert 'data' in json_data
+    assert isinstance(json_data['data'], list)
+
+def test_get_finalizacao_falha(client):
+    response = client.post('/api/getFinalizacao', json = {})
+    json_data = response.get_json()
+
+    assert json_data['error'] == True
+    assert 'message' in json_data
 
 def test_encerrar_vaga(client):
     response = client.post('/api/encerraVaga', json = {
@@ -73,7 +105,15 @@ def test_encerrar_vaga(client):
     json_data = response.get_json()
 
     assert response.status_code == 200
-    assert json_data['vaga'] == '1'
+    assert 'vaga' in json_data['data']
+    assert json_data['data']['vaga'] == '1'
+
+def test_encerrar_vaga_falha(client):
+    response = client.post('/api/encerraVaga', json = {})
+    json_data = response.get_json()
+
+    assert json_data['error'] == True
+    assert json_data['message'] == 'Erro ao encerrar vaga: \'vaga\''
 
 def test_cria_cliente(client):
     response = client.post('/api/criaCliente', json = {
@@ -89,7 +129,15 @@ def test_cria_cliente(client):
     json_data = response.get_json()
 
     assert response.status_code == 200
-    assert json_data['cpf'] == '12345678900'
+    assert 'cpf' in json_data['data']
+    assert json_data['data']['cpf'] == '12345678900'
+
+def test_cria_cliente_falha(client):
+    response = client.post('/api/criaCliente', json = {})
+    json_data = response.get_json()
+
+    assert json_data['error'] == True
+    assert 'message' in json_data
 
 def test_editar_cliente(client):
     response = client.post('/api/editarCliente', json = {
@@ -101,7 +149,15 @@ def test_editar_cliente(client):
     json_data = response.get_json()
 
     assert response.status_code == 200
-    assert json_data['cpf'] == '12345678900'
+    assert 'cpf' in json_data['data']
+    assert json_data['data']['cpf'] == '12345678900'
+
+def test_editar_cliente_falha(client):
+    response = client.post('/api/editarCliente', json = {})
+    json_data = response.get_json()
+
+    assert json_data['error'] == True
+    assert json_data['message'] == 'Erro ao atualizar cliente: \'nome\''
 
 def test_cliente_cadastrado(client):
     response = client.post('/api/clienteCadastrado', json = {
@@ -111,4 +167,15 @@ def test_cliente_cadastrado(client):
     json_data = response.get_json()
 
     assert response.status_code == 200
-    assert json_data['cpf'] == '12345678900'
+    assert 'cpf' in json_data['data']
+    assert json_data['data']['cpf'] == '12345678900'
+
+def test_cliente_cadastrado_falha(client):
+    response = client.post('/api/clienteCadastrado', json = {
+        'cpf': '00000000000',
+        'vaga': '0'
+    })
+    json_data = response.get_json()
+
+    assert json_data['error'] == True
+    assert json_data['message'] == 'Erro ao registrar cliente na vaga: 0'

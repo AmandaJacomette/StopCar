@@ -17,7 +17,7 @@ class DatabaseConnection:
                 cls._instance = super(DatabaseConnection, cls).__new__(cls)
                 cls._instance.connection = psycopg2.connect(
                     host='localhost',
-                    database='stopCar',
+                    database='StopCar',
                     user='postgres',
                     password='147258'
                 )

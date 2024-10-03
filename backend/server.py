@@ -95,13 +95,67 @@ def inserir_db(query):
 app = Flask(__name__)
 CORS(app)
 
-# Função para calcular diferença em horas
+# Função para calcular diferença em horas (Comecar testes daqui)
 def calcular_diferenca_em_horas(data_armazenada):
     data_armazenada_dt = datetime.strptime(data_armazenada, '%Y-%m-%d %H:%M:%S')
     data_atual = datetime.now()
     diferenca = data_atual - data_armazenada_dt
     diferenca_em_horas = diferenca.total_seconds() / 3600
     return diferenca_em_horas
+
+def busca_veiculo(placa):
+    query = QueryFactory.select_query(
+        table='veiculo',
+        columns='id_veiculo',
+        where_clause=f"placa = '{placa}'"
+    )
+    return consultar_db(query)
+
+def preenche_vaga(veiculo, vaga):
+    data_e_hora_em_texto = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    
+    insert_query = QueryFactory.insert_query(
+        table='estacionado',
+        columns=['veiculo', 'vaga', 'horaentrada'],
+        values=[veiculo, vaga, data_e_hora_em_texto]
+    )
+    
+    update_query = QueryFactory.update_query(
+        table='vagas',
+        updates={'liberada': 'false'},
+        where_clause=f"id_vaga = '{vaga}'"
+    )
+    
+    inserir_db(insert_query)
+    inserir_db(update_query)
+
+def busca_cliente_carro(cpf):
+    query = QueryFactory.select_query(
+        table='carro_cliente',
+        columns='veiculo',
+        where_clause=f"cliente = '{cpf}'"
+    )
+    return consultar_db(query)
+
+def updade_fidelidade(cpf):
+
+    query = QueryFactory.select_query(
+        table='cliente',
+        columns='fidelidade',
+        where_clause=f"cpf = '{cpf}'"
+    )
+    result = consultar_db(query)
+
+    df_bd = pd.DataFrame(result, columns=['fidelidade']).to_dict()
+    fidelidade = df_bd['fidelidade'][0]
+    fidelidade += 1
+
+    query = QueryFactory.update_query(
+        table='cliente',
+        updates={'fidelidade': fidelidade},
+        where_clause=f"cpf = '{cpf}'"
+    )
+    return inserir_db(query)
 
 ##################   ROTAS   ######################
 
@@ -173,32 +227,6 @@ def veiculo_cadastrado():
     
     preenche_vaga(veiculoEntrando, vaga)
     return jsonify(data)
-
-def busca_veiculo(placa):
-    query = QueryFactory.select_query(
-        table='veiculo',
-        columns='id_veiculo',
-        where_clause=f"placa = '{placa}'"
-    )
-    return consultar_db(query)
-
-def preenche_vaga(veiculo, vaga):
-    data_e_hora_em_texto = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    
-    insert_query = QueryFactory.insert_query(
-        table='estacionado',
-        columns=['veiculo', 'vaga', 'horaentrada'],
-        values=[veiculo, vaga, data_e_hora_em_texto]
-    )
-    
-    update_query = QueryFactory.update_query(
-        table='vagas',
-        updates={'liberada': 'false'},
-        where_clause=f"id_vaga = '{vaga}'"
-    )
-    
-    inserir_db(insert_query)
-    inserir_db(update_query)
 
 @app.route('/api/getFinalizacao', methods=['POST'])
 def get_finalizacao():
@@ -336,34 +364,6 @@ def cliente_cadastrado():
     preenche_vaga(veiculoEntrando, vaga)
     updade_fidelidade(cpf)
     return jsonify(data)
-
-def busca_cliente_carro(cpf):
-    query = QueryFactory.select_query(
-        table='carro_cliente',
-        columns='veiculo',
-        where_clause=f"cliente = '{cpf}'"
-    )
-    return consultar_db(query)
-
-def updade_fidelidade(cpf):
-
-    query = QueryFactory.select_query(
-        table='cliente',
-        columns='fidelidade',
-        where_clause=f"cpf = '{cpf}'"
-    )
-    result = consultar_db(query)
-
-    df_bd = pd.DataFrame(result, columns=['fidelidade']).to_dict()
-    fidelidade = df_bd['fidelidade'][0]
-    fidelidade += 1
-
-    query = QueryFactory.update_query(
-        table='cliente',
-        updates={'fidelidade': fidelidade},
-        where_clause=f"cpf = '{cpf}'"
-    )
-    return inserir_db(query)
 
 # Rodando a aplicação
 if __name__ == '__main__':

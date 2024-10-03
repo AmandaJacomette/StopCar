@@ -1,23 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-
-import {withRouter} from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// import $ from 'jquery';
-
-import logo from "../img/logo.png"
-//import Popup from '../components/popuplogin';
 import '../components/style/style.css'
-import StoreContext from '../components/Store/Context';
 import Popup from '../components/Popup';
 
-function VagasEstacionamento({userData}){
-  //const history = useNavigate();
-  const navigate = useNavigate();
+function VagasEstacionamento(){
   const [tableDataVagas, setTableDataVagas] = useState([]);
-  //const [formDataEncerra, setEncerra] = useState([]);
   const [vagaEscolhida, setVaga] = useState(null);
-  const { setToken, token } = useContext(StoreContext);
   const [buttonPopup, setButtonPopup] = useState(false);
   const [buttonPopupOcupado, setButtonPopupOcupado] = useState(false);
   const [buttonPopupCadastrar, setCadastrarVeiculo] = useState(false);
@@ -44,7 +32,18 @@ function VagasEstacionamento({userData}){
   const[formDataCliente, setCliente] = useState({
     cpf: ''
   });
-  
+
+  const [successMessage, setSuccessMessage] = useState(''); // Estado para mensagem de sucesso
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false); // Estado para controle do pop-up
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setShowSuccessPopup(true);
+    setTimeout(() => {
+      setShowSuccessPopup(false);
+    }, 3000); // Pop-up some após 3 segundos
+  };
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFunc((prevData) => ({
@@ -97,7 +96,7 @@ const clearCliente = () => {
 useEffect(() => {
   const interval = setInterval(() => {
   getVagas();
-  }, 2000); 
+  }, 1000); 
   return () => clearInterval(interval);
   
 }, [tableDataVagas]);
@@ -107,8 +106,13 @@ const getVagas = (event) => {
   axios.get('http://127.0.0.1:5000/api/getVagas')
   .then(response => {
     console.log('Resposta do servidor:', response.data);
-    const vagas = response.data
-    setTableDataVagas([...vagas])
+    if (response.data.error === false) {
+      const vagas = response.data.data
+      setTableDataVagas([...vagas])
+    } else {
+      window.alert(response.data.message);
+    }
+    
   })
   .catch(error => {
     console.error('Erro ao buscar vagas:', error);
@@ -116,7 +120,6 @@ const getVagas = (event) => {
 }
 
 const handleVaga = (vaga, status) => {
-  console.log('Vaga selecionada:', vaga); // Log para depuração
   setVaga(vaga);
   if (status === "Livre") {
   handleVagaLivre();
@@ -127,13 +130,11 @@ const handleVaga = (vaga, status) => {
 
 const handleVagaLivre = () => {
   setButtonPopup(true);
-  
 }
 
 const handleVagaOcupada = (vaga) => {
   getFinalizacao(vaga)
-  setButtonPopupOcupado(true);
-  
+  setButtonPopupOcupado(true); 
 }
 
 const getFinalizacao = (vaga) => {
@@ -141,12 +142,16 @@ const getFinalizacao = (vaga) => {
   const dataToSend = {
     vaga: vaga
   };
-      console.log(dataToSend)
+
   axios.post('http://127.0.0.1:5000/api/getFinalizacao', dataToSend)
     .then(response => {
       console.log('Resposta do servidor:', response.data);
-      const preenchido = response.data[0]
-      setEncerra(preenchido)
+      if (response.data.error === false) {
+        const preenchido = response.data.data[0];
+        setEncerra(preenchido);
+      } else {
+        window.alert(response.data.message);
+      }
     })
     .catch(error => {
       console.error('Erro ao buscar vagas:', error);
@@ -170,8 +175,14 @@ const handleSubmitModal = (event) => {
   axios.post('http://127.0.0.1:5000/api/cadastraVeiculo', dataToSend)
   .then(response => {
     console.log('Resposta do servidor:', response.data);
-    setCadastrarVeiculo(false);
-    clearCadastrar();
+    if (response.data.error === false) {
+      setCadastrarVeiculo(false);
+      clearCadastrar();
+      showSuccess('Veículo cadastrado e vaga preenchida com sucesso!');
+    } else {
+      window.alert(response.data.message);
+    }
+    
   })
   .catch(error => {
     console.error('Erro ao enviar dados:', error);
@@ -201,8 +212,12 @@ const handleSubmitModalBusca = (event) => {
   axios.post('http://127.0.0.1:5000/api/veiculoCadastrado', dataToSend)
   .then(response => {
     console.log('Resposta do servidor:', response.data);
-    setBuscaVeiculo(false);
-    clearBuscar()
+    if (response.data.error === false) {
+      setBuscaVeiculo(false);
+      clearBuscar()
+    } else {
+      window.alert(response.data.message);
+    }
   })
   .catch(error => {
     console.error('Erro ao enviar dados:', error);
@@ -215,7 +230,12 @@ const handleSubmitModalEncerrar = (event) => {
   axios.post('http://127.0.0.1:5000/api/encerraVaga', formDataEncerra)
   .then(response => {
     console.log('Resposta do servidor:', response.data);
-    setButtonPopupOcupado(false);
+    if (response.data.error === false) {
+      setButtonPopupOcupado(false);
+    } else {
+      window.alert(response.data.message);
+    }
+    
   })
   .catch(error => {
     console.error('Erro ao enviar dados:', error);
@@ -233,8 +253,13 @@ const handleSubmitModalCliente = (event) => {
   axios.post('http://127.0.0.1:5000/api/clienteCadastrado', dataToSend)
   .then(response => {
     console.log('Resposta do servidor:', response.data);
-    setBuscaVeiculo(false);
-    clearBuscar()
+    if (response.data.error === false) {
+      setClientePopup(false);
+      clearBuscar();
+    } else {
+      window.alert(response.data.message);
+    }
+    
   })
   .catch(error => {
     console.error('Erro ao enviar dados:', error);
@@ -258,6 +283,12 @@ const handleSubmitModalCliente = (event) => {
         );
         })
     }
+
+    {showSuccessPopup && (
+      <div className="success-popup">
+        {successMessage}
+      </div>
+    )}
       
     <Popup trigger={buttonPopup} setTrigger={setButtonPopup}>
     <div className='textVagas'>Vaga {vagaEscolhida}</div>

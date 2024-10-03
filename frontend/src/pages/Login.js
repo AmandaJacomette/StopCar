@@ -3,15 +3,9 @@ import '../App.css';
 import logo from "../img/logo.png"
 import { Link, useNavigate } from 'react-router-dom';
 import StoreContext from '../components/Store/Context';
-import {withRouter} from 'react-router-dom';
-import Popup from '../components/popuplogin';
 import axios from 'axios';
 
-
-
-
 function Formulario({navigation}){
-    //const history = useNavigate();
     const navigate = useNavigate()
     const { setToken, token } = useContext(StoreContext);
     const { setCpf, cpf } = useContext(StoreContext);
@@ -35,23 +29,19 @@ function Formulario({navigation}){
 
       axios.post('http://127.0.0.1:5000/api/login', formData)
       .then(response => {
-        
+        console.log(response.data);
         if(response.data.error != true){
-          setNome({nome: response.data.nome});
+          setNome({nome: response.data.data.nome});
           setToken({token: 1});
           navigate("Home",  { replace: false });
         } else {
-          window.alert("Erro ao fazer login! Verifique seu usuario e senha e tente novamente.");
+          window.alert("Erro ao fazer login! " + response.data.message);
         }
         
       })
       .catch(error => {
         console.error('Erro ao enviar dados:', error);
       });
-        
-        if (formData.login == '2001' && formData.senha == '123'){
-          navigate("Home",  { replace: false });
-        }
         event.preventDefault();
       };
     

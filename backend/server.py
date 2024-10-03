@@ -17,7 +17,7 @@ class DatabaseConnection:
                 cls._instance = super(DatabaseConnection, cls).__new__(cls)
                 cls._instance.connection = psycopg2.connect(
                     host='localhost',
-                    database='StopCar',
+                    database='stopCar',
                     user='postgres',
                     password='147258'
                 )
@@ -157,219 +157,249 @@ def updade_fidelidade(cpf):
     )
     return inserir_db(query)
 
+# Função de retorno padrão para sucesso e erro
+def response_format(error, message, data=None):
+    return jsonify({
+        'error': error,
+        'message': message,
+        'data': data
+    })
+
 ##################   ROTAS   ######################
 
 @app.route('/api/login', methods=['POST'])
 def send_data():
-    data = request.json
-    login = data['login']
-    senha = data['senha']
-    
-    query = QueryFactory.select_query(
-        table='public.atendente', 
-        columns='nome_atendente', 
-        where_clause=f"email_atendente = '{login}' AND senha_atendente = '{senha}'"
-    )
-    
-    reg = consultar_db(query)
-    if len(reg) > 0:
-        df_bd = pd.DataFrame(reg, columns=['nome_atendente']).to_dict()
-        return {'error': False, 'nome': df_bd['nome_atendente'][0]}
-    else:
-        return {'error': True, 'mensagem': 'Não foi possível encontrar o funcionário'}
+    try:
+        data = request.json
+        login = data['login']
+        senha = data['senha']
+        
+        query = QueryFactory.select_query(
+            table='public.atendente', 
+            columns='nome_atendente', 
+            where_clause=f"email_atendente = '{login}' AND senha_atendente = '{senha}'"
+        )
+        
+        reg = consultar_db(query)
+        if len(reg) > 0:
+            df_bd = pd.DataFrame(reg, columns=['nome_atendente']).to_dict()
+            return response_format(False, 'Login bem-sucedido', {'nome': df_bd['nome_atendente'][0]})
+        else:
+            return response_format(True, 'Não foi possível encontrar o funcionário')
+    except Exception as e:
+        return response_format(True, f'Erro ao processar login: {str(e)}')
 
 @app.route('/api/getVagas', methods=['GET'])
 def get_vagas():
-    query = QueryFactory.select_query('vagas', order_by='id_vaga')
-    vagasBD = consultar_db(query)
-    df_bd = pd.DataFrame(vagasBD, columns=['id_vaga', 'liberada']).to_dict()
+    try:
+        query = QueryFactory.select_query('vagas', order_by='id_vaga')
+        vagasBD = consultar_db(query)
+        df_bd = pd.DataFrame(vagasBD, columns=['id_vaga', 'liberada']).to_dict()
 
-    vagas = []
-    for i in range(len(df_bd['id_vaga'])):
-        status_vaga = "Livre" if df_bd['liberada'][i] else "Ocupada"
-        vagas.append({'id_vaga': df_bd['id_vaga'][i], 'liberada': status_vaga})
-    
-    return jsonify(vagas)
+        vagas = []
+        for i in range(len(df_bd['id_vaga'])):
+            status_vaga = "Livre" if df_bd['liberada'][i] else "Ocupada"
+            vagas.append({'id_vaga': df_bd['id_vaga'][i], 'liberada': status_vaga})
+        
+        return response_format(False, 'Vagas obtidas com sucesso', vagas)
+    except Exception as e:
+        return response_format(True, f'Erro ao buscar vagas: {str(e)}')
 
 @app.route('/api/cadastraVeiculo', methods=['POST'])
 def create_veiculos():
-    data = request.json
-    tipo = data['tipo']
-    placa = data['placa']
-    cor = data['cor']
-    modelo = data['modelo']
-    vaga = data['vaga']
-    
-    query = QueryFactory.insert_query(
-        table='veiculo',
-        columns=['tipo', 'placa', 'cor', 'modelo'],
-        values=[tipo, placa, cor, modelo]
-    )
-    
-    inserir_db(query)
-    
-    veiculo = busca_veiculo(placa)
-    df_bd = pd.DataFrame(veiculo, columns=['id_veiculo']).to_dict()
-    veiculoEntrando = df_bd['id_veiculo'][0]
-    
-    preenche_vaga(veiculoEntrando, vaga)
-    return jsonify(data)
+    try:
+        data = request.json
+        tipo = data['tipo']
+        placa = data['placa']
+        cor = data['cor']
+        modelo = data['modelo']
+        vaga = data['vaga']
+        
+        query = QueryFactory.insert_query(
+            table='veiculo',
+            columns=['tipo', 'placa', 'cor', 'modelo'],
+            values=[tipo, placa, cor, modelo]
+        )
+        
+        inserir_db(query)
+        
+        veiculo = busca_veiculo(placa)
+        df_bd = pd.DataFrame(veiculo, columns=['id_veiculo']).to_dict()
+        veiculoEntrando = df_bd['id_veiculo'][0]
+        
+        preenche_vaga(veiculoEntrando, vaga)
+        return response_format(False, 'Veículo cadastrado com sucesso', data)
+    except Exception as e:
+        return response_format(True, f'Erro ao cadastrar veículo: {str(e)}')
 
 @app.route('/api/veiculoCadastrado', methods=['POST'])
 def veiculo_cadastrado():
-    data = request.json
-    placa = data['placa']
-    vaga = data['vaga']
-    
-    veiculo = busca_veiculo(placa)
-    df_bd = pd.DataFrame(veiculo, columns=['id_veiculo']).to_dict()
-    veiculoEntrando = df_bd['id_veiculo'][0]
-    
-    preenche_vaga(veiculoEntrando, vaga)
-    return jsonify(data)
+    try:
+        data = request.json
+        placa = data['placa']
+        vaga = data['vaga']
+        
+        veiculo = busca_veiculo(placa)
+        df_bd = pd.DataFrame(veiculo, columns=['id_veiculo']).to_dict()
+        veiculoEntrando = df_bd['id_veiculo'][0]
+        
+        preenche_vaga(veiculoEntrando, vaga)
+        return response_format(False, 'Veículo registrado na vaga com sucesso', data)
+    except Exception as e:
+        return response_format(True, f'Erro ao registrar veículo na vaga: {str(e)}')
 
 @app.route('/api/getFinalizacao', methods=['POST'])
 def get_finalizacao():
-    data = request.json
-    vaga = data['vaga']
-    
-    query = QueryFactory.select_query(
-        table='estacionado E, veiculo V',
-        columns='E.*, V.*',
-        where_clause=f"V.id_veiculo = E.veiculo AND E.vaga = '{vaga}'"
-    )
-    
-    vagasBD = consultar_db(query)
-    df_bd = pd.DataFrame(vagasBD, columns=['id_est', 'veiculo', 'vaga', 'horaentrada', 'id_veiculo', 'tipo', 'placa', 'cor', 'modelo']).to_dict()
-    
-    preenchida = []
-    for i in range(len(df_bd['id_est'])):
-        diferenca = calcular_diferenca_em_horas(df_bd['horaentrada'][i])
-        valor = round(diferenca, 2) * 10
-        preenchida.append({
-            'id_est': df_bd['id_est'][i],
-            'placa': df_bd['placa'][i].upper(),
-            'id_veiculo': df_bd['id_veiculo'][i],
-            'vaga': df_bd['vaga'][i],
-            'horaentrada': df_bd['horaentrada'][i],
-            'horas': round(diferenca, 2),
-            'valor': round(valor, 2)
-        })
-    
-    return jsonify(preenchida)
+    try:
+        data = request.json
+        vaga = data['vaga']
+        
+        query = QueryFactory.select_query(
+            table='estacionado E, veiculo V',
+            columns='E.*, V.*',
+            where_clause=f"V.id_veiculo = E.veiculo AND E.vaga = '{vaga}'"
+        )
+        
+        vagasBD = consultar_db(query)
+        df_bd = pd.DataFrame(vagasBD, columns=['id_est', 'veiculo', 'vaga', 'horaentrada', 'id_veiculo', 'tipo', 'placa', 'cor', 'modelo']).to_dict()
+        
+        preenchida = []
+        for i in range(len(df_bd['id_est'])):
+            diferenca = calcular_diferenca_em_horas(df_bd['horaentrada'][i])
+            valor = round(diferenca, 2) * 10
+            preenchida.append({
+                'id_est': df_bd['id_est'][i],
+                'placa': df_bd['placa'][i].upper(),
+                'id_veiculo': df_bd['id_veiculo'][i],
+                'vaga': df_bd['vaga'][i],
+                'horaentrada': df_bd['horaentrada'][i],
+                'horas': round(diferenca, 2),
+                'valor': round(valor, 2)
+            })
+        
+        return response_format(False, 'Finalização obtida com sucesso', preenchida)
+    except Exception as e:
+        return response_format(True, f'Erro ao obter finalização: {str(e)}')
 
 @app.route('/api/encerraVaga', methods=['POST'])
 def encerrar_vaga():
-    data = request.json
-    vaga = data['vaga']
-    id_veiculo = data['id_veiculo']
-    
-    delete_query = QueryFactory.delete_query(
-        table='estacionado',
-        where_clause=f"veiculo = '{id_veiculo}' AND vaga = '{vaga}'"
-    )
-    
-    update_query = QueryFactory.update_query(
-        table='vagas',
-        updates={'liberada': 'TRUE'},
-        where_clause=f"id_vaga = '{vaga}'"
-    )
-    
-    inserir_db(delete_query)
-    inserir_db(update_query)
-    
-    return jsonify(data)
+    try:
+        data = request.json
+        vaga = data['vaga']
+        id_veiculo = data['id_veiculo']
+        
+        delete_query = QueryFactory.delete_query(
+            table='estacionado',
+            where_clause=f"veiculo = '{id_veiculo}' AND vaga = '{vaga}'"
+        )
+        
+        update_query = QueryFactory.update_query(
+            table='vagas',
+            updates={'liberada': 'TRUE'},
+            where_clause=f"id_vaga = '{vaga}'"
+        )
+        
+        inserir_db(delete_query)
+        inserir_db(update_query)
+        
+        return response_format(False, 'Vaga encerrada com sucesso', data)
+    except Exception as e:
+        return response_format(True, f'Erro ao encerrar vaga: {str(e)}')
 
 @app.route('/api/criaCliente', methods=['POST'])
 def create_clientes():
-    data = request.json
-    nome = data['nome']
-    cpf = data['cpf']
-    email = data['email']
-    telefone = data['telefone']
+    try:
+        data = request.json
+        nome = data['nome']
+        cpf = data['cpf']
+        email = data['email']
+        telefone = data['telefone']
 
-    tipo = data['tipo']
-    placa = data['placa']
-    cor = data['cor']
-    modelo = data['modelo']
-    
-    query = QueryFactory.insert_query(
-        table='veiculo',
-        columns=['tipo', 'placa', 'cor', 'modelo'],
-        values=[tipo, placa, cor, modelo]
-    )
-    
-    inserir_db(query)
+        tipo = data['tipo']
+        placa = data['placa']
+        cor = data['cor']
+        modelo = data['modelo']
+        
+        query = QueryFactory.insert_query(
+            table='veiculo',
+            columns=['tipo', 'placa', 'cor', 'modelo'],
+            values=[tipo, placa, cor, modelo]
+        )
+        
+        inserir_db(query)
 
-    veiculo = busca_veiculo(placa)
-    df_bd = pd.DataFrame(veiculo, columns=['id_veiculo']).to_dict()
-    veiculoEntrando = df_bd['id_veiculo'][0]
-    
-    
-    query = QueryFactory.insert_query(
-        table='cliente',
-        columns=['cpf', 'nome_cliente', 'email_cliente', 'telefone_cliente'],
-        values=[cpf, nome, email, telefone]
-    )
-    
-    inserir_db(query)
+        veiculo = busca_veiculo(placa)
+        df_bd = pd.DataFrame(veiculo, columns=['id_veiculo']).to_dict()
+        veiculoEntrando = df_bd['id_veiculo'][0]
+        
+        query = QueryFactory.insert_query(
+            table='cliente',
+            columns=['cpf', 'nome_cliente', 'email_cliente', 'telefone_cliente'],
+            values=[cpf, nome, email, telefone]
+        )
+        
+        inserir_db(query)
 
-    query = QueryFactory.insert_query(
-        table='carro_cliente',
-        columns=['cliente', 'veiculo'],
-        values=[cpf, veiculoEntrando]
-    )
-    
-    inserir_db(query)
-    
-    return jsonify(data)
+        query = QueryFactory.insert_query(
+            table='carro_cliente',
+            columns=['cliente', 'veiculo'],
+            values=[cpf, veiculoEntrando]
+        )
+        
+        inserir_db(query)
+        
+        return response_format(False, 'Cliente criado com sucesso', data)
+    except Exception as e:
+        return response_format(True, f'Erro ao criar cliente: {str(e)}')
 
 @app.route('/api/editarCliente', methods=['POST'])
 def edit_clientes():
-    data = request.json
-    nome = data['nome']
-    cpf = data['cpf']
-    email = data['email']
-    telefone = data['telefone']
-    
-    updates = {}
+    try:
+        data = request.json
+        nome = data['nome']
+        cpf = data['cpf']
+        email = data['email']
+        telefone = data['telefone']
+        
+        updates = {}
 
-    if(nome):
-        updates['nome_cliente'] = nome
-    if(email):
-        updates['email_cliente'] = email
-    if(telefone):
-        updates['telefone_cliente'] = telefone
+        if nome:
+            updates['nome_cliente'] = nome
+        if email:
+            updates['email_cliente'] = email
+        if telefone:
+            updates['telefone_cliente'] = telefone
 
-    update_query = QueryFactory.update_query(
-        table='cliente',
-        updates=updates,
-        where_clause=f"cpf = '{cpf}'"
-    )
-    
-    inserir_db(update_query)
-    
-    return jsonify(data)
+        update_query = QueryFactory.update_query(
+            table='cliente',
+            updates=updates,
+            where_clause=f"cpf = '{cpf}'"
+        )
+        
+        inserir_db(update_query)
+        
+        return response_format(False, 'Cliente atualizado com sucesso', data)
+    except Exception as e:
+        return response_format(True, f'Erro ao atualizar cliente: {str(e)}')
 
 @app.route('/api/clienteCadastrado', methods=['POST'])
 def cliente_cadastrado():
-    data = request.json
-    cpf = data['cpf']
-    vaga = data['vaga']
-    
-    veiculo = busca_cliente_veiculo(cpf)
-    print("veiculo retornado:", veiculo)
-    df_bd = pd.DataFrame(veiculo, columns=['veiculo']).to_dict()
-    veiculoEntrando = df_bd['veiculo'][0]
-    
-    #if len(df_bd['veiculo']) > 0:
-    #    veiculoEntrando = df_bd['veiculo'][0]
-    #else:
-    #    return jsonify({"error": "Cliente não encontrado ou veículo não cadastrado"}), 404
-    
-    preenche_vaga(veiculoEntrando, vaga)
-    updade_fidelidade(cpf)
-    return jsonify(data)
+    try:
+        data = request.json
+        cpf = data['cpf']
+        vaga = data['vaga']
+        
+        veiculo = busca_cliente_veiculo(cpf)
+        df_bd = pd.DataFrame(veiculo, columns=['veiculo']).to_dict()
+        veiculoEntrando = df_bd['veiculo'][0]
+        
+        preenche_vaga(veiculoEntrando, vaga)
+        updade_fidelidade(cpf)
+        
+        return response_format(False, 'Cliente registrado na vaga com sucesso', data)
+    except Exception as e:
+        return response_format(True, f'Erro ao registrar cliente na vaga: {str(e)}')
+
 
 # Rodando a aplicação
 if __name__ == '__main__':

@@ -15,7 +15,7 @@ class DatabaseConnection:
                 cls._instance = super(DatabaseConnection, cls).__new__(cls)
                 cls._instance.connection = psycopg2.connect(
                     host='localhost',
-                    database='StopCar',
+                    database='stopCar',
                     user='postgres',
                     password='147258'
                 )
@@ -355,7 +355,7 @@ def create_clientes():
         inserir_db(query)
 
         query = QueryFactory.insert_query(
-            table='carro_cliente',
+            table='veiculo_cliente',
             columns=['cliente', 'veiculo'],
             values=[cpf, veiculoEntrando]
         )
